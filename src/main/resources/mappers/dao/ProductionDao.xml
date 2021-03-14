@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.devsjk.namecardserver.dao.ProductionDao">
+
+	<select id="listProductionByCategoryId" parameterType="ProductionCategory" resultType="Production">
+        <include refid="BaseMapper.pageStart"/>
+		select id,`name`,price,description from production
+		<include refid="listCondition"/>
+		<include refid="BaseMapper.pageEnd"/>
+	</select>
+
+    <sql id="listCondition">
+        <trim prefix="where" prefixOverrides="OR|AND">
+            <if test="categoryId!=null">
+                and category_id=#{categoryId}
+            </if>
+            <if test="companyId!=null">
+                and company_id=#{companyId}
+            </if>
+        </trim>
+    </sql>
+
+    <select id="listByCompanyId" parameterType="Production" resultType="Production">
+        select t.*,pc.name as categoryName from (
+        <include refid="BaseMapper.pageStart"/>
+        select id,`name`,category_id,company_id,price,onsale,description,seq,cover_url,detail_url from production where company_id=#{companyId} and del=0
+         <if test="name!=null and name!=''">
+             and `name` like concat('%',#{name},'%')
+         </if>
+         <if test="categoryId!=null">
+             and category_id=#{categoryId}
+         </if>
+        <include refid="BaseMapper.pageEnd"/>
+        ) t
+        left join (select * from production_category where company_id=#{companyId}) pc on t.category_id=pc.id order by t.onsale desc,t.seq asc
+    </select>
+
+    <select id="listCountByCompanyId" parameterType="Production" resultType="long">
+        select count(*) from production where company_id=#{companyId} and del=0
+        <if test="name!=null and name!=''">
+            and `name` like concat('%',#{name},'%')
+        </if>
+    </select>
+
+    <insert id="insertProduction" parameterType="Production" keyProperty="id" useGeneratedKeys="true">
+        insert into production(`name`,category_id,company_id,price,onsale,description,seq,cover_url,detail_url,creator,creatorId)
+        values (#{name},#{categoryId},#{companyId},#{price},#{onsale},#{description},#{seq},#{coverUrl},#{detailUrl},#{creator},#{creatorId})
+    </insert>
+
+    <select id="findProduction" parameterType="Production" resultType="Production">
+        select * from production where id=#{id}
+    </select>
+
+    <update id="updateProduction" parameterType="Production">
+        update production
+        <trim prefix="set" prefixOverrides=",">
+            <if test="name!=null and name!=''">
+                ,`name`=#{name}
+            </if>
+            <if test="categoryId!=null">
+                ,category_id=#{categoryId}
+            </if>
+            <if test="companyId!=null">
+                ,company_id=#{companyId}
+            </if>
+            <if test="price!=null">
+                ,price=#{price}
+            </if>
+            <if test="onsale!=null">
+                ,onsale=#{onsale}
+            </if>
+            <if test="description!=null and description!=''">
+                ,description=#{description}
+            </if>
+            <if test="seq!=null">
+                ,seq=#{seq}
+            </if>
+            <if test="coverUrl!=null and coverUrl!=''">
+                ,cover_url=#{coverUrl}
+            </if>
+            <if test="detailUrl!=null and detailUrl!=''">
+                ,detail_url=#{detailUrl}
+            </if>
+        </trim>
+        where id=#{id}
+    </update>
+
+    <update id="deleteProductioin" parameterType="Production">
+        update production set del=1 where id=#{id}
+    </update>
+
+    <select id="listOnsaleProduction" parameterType="long" resultType="Production">
+        select id,`name`,cover_url from production where del=0 and onsale=1 and company_id=#{companyId} order by seq asc
+    </select>
+
+</mapper>

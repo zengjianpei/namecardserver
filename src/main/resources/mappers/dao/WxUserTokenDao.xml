@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.devsjk.namecardserver.dao.WxUserTokenDao">
+
+	<insert id="insertWxUserToken" parameterType="WxUserToken" >
+		replace into wx_user_token(wxUserId,accessToken,valid,createTime)
+		values (#{wxUserId},#{accessToken},DATE_ADD(now(),INTERVAL #{active_mins} MINUTE),now())
+	</insert>
+
+	<select id="findWxUserTokenByAccessToken" parameterType="string" resultType="WxUserToken">
+		select wxUserId,accessToken,valid,now() as curTime from wx_user_token where accessToken=#{accessToken}
+	</select>
+
+	<update id="updateUserTokenVaild" parameterType="WxUserToken">
+		update wx_user_token set valid=DATE_ADD(now(),INTERVAL #{active_mins} MINUTE) where wxUserId=#{wxUserId}
+	</update>
+
+</mapper>

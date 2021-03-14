@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.devsjk.namecardserver.dao.WxUserDao">
+
+	<insert id="insertWxUser" parameterType="WxUser" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO wx_user(wx_id,sessionKey,nickname,mobile,gender,openid,unionid,wxAccessToken,refreshToken,`language`,city,province,country,avatarUrl,status,userRegister,creatorId,creator)
+		VALUES (#{wxId},#{sessionKey},#{nickname},#{mobile},#{gender},#{openid},#{unionid},#{wxAccessToken},#{refreshToken},#{language},#{city},#{province},#{country},#{avatarUrl},#{status},#{userRegister},#{creatorId},#{creator})
+	</insert>
+
+	<update id="deleteWxUser" parameterType="WxUser">
+		UPDATE wx_user SET del=1 WHERE id=#{id}
+	</update>
+
+	<select id="findWxUser" parameterType="WxUser" resultType="WxUser">
+		SELECT * FROM wx_user WHERE id=#{id}
+	</select>
+
+	<update id="updateWxUser" parameterType="WxUser">
+		UPDATE wx_user
+		<trim prefix="SET" prefixOverrides=",">
+			<if test="wxId!=null and wxId!=''">
+				,wx_id=#{wxId}
+			</if>
+			<if test="sessionKey!=null and sessionKey!=''">
+				,sessionKey=#{sessionKey}
+			</if>
+			<if test="nickname!=null and nickname!=''">
+				,nickname=#{nickname}
+			</if>
+			<if test="mobile!=null and mobile!=''">
+				,mobile=#{mobile}
+			</if>
+			<if test="gender!=null">
+				,gender=#{gender}
+			</if>
+			<if test="openid!=null and openid!=''">
+				,openid=#{openid}
+			</if>
+			<if test="unionid!=null and unionid!=''">
+				,unionid=#{unionid}
+			</if>
+			<if test="wxAccessToken!=null and wxAccessToken!=''">
+				,wxAccessToken=#{wxAccessToken}
+			</if>
+			<if test="refreshToken!=null and refreshToken!=''">
+				,refreshToken=#{refreshToken}
+			</if>
+			<if test="language!=null and language!=''">
+				,`language`=#{language}
+			</if>
+			<if test="city!=null and city!=''">
+				,city=#{city}
+			</if>
+			<if test="province!=null and province!=''">
+				,province=#{province}
+			</if>
+			<if test="country!=null and country!=''">
+				,country=#{country}
+			</if>
+			<if test="avatarUrl!=null and avatarUrl!=''">
+				,avatarUrl=#{avatarUrl}
+			</if>
+			<if test="status!=null">获取accessToken失败
+				,status=#{status}
+			</if>
+			<if test="updatorId!=null and updatorId!=''">
+				,updatorId=#{updatorId}
+			</if>
+			<if test="updator!=null and updator!=''">
+				,updator=#{updator}
+			</if>
+			<if test="userRegister!=null">
+				,userRegister=#{userRegister}
+			</if>
+			,updateTime=now()
+		</trim>
+		WHERE id=#{id}
+	</update>
+
+	<sql id="listCondition">
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="id!=null and id!=''">
+				AND id LIKE CONCAT('%',#{id},'%')
+			</if>
+			<if test="wxId!=null and wxId!=''">
+				AND wxId LIKE CONCAT('%',#{wxId},'%')
+			</if>
+			<if test="sessionKey!=null and sessionKey!=''">
+				AND sessionKey LIKE CONCAT('%',#{sessionKey},'%')
+			</if>
+			<if test="nickname!=null and nickname!=''">
+				AND nickname LIKE CONCAT('%',#{nickname},'%')
+			</if>
+			<if test="mobile!=null and mobile!=''">
+				AND mobile LIKE CONCAT('%',#{mobile},'%')
+			</if>
+			<if test="sex!=null">
+				AND sex=#{sex}
+			</if>
+			<if test="openid!=null and openid!=''">
+				AND openid LIKE CONCAT('%',#{openid},'%')
+			</if>
+			<if test="unionid!=null and unionid!=''">
+				AND unionid LIKE CONCAT('%',#{unionid},'%')
+			</if>
+			<if test="wxAccessToken!=null and wxAccessToken!=''">
+				AND wxAccessToken LIKE CONCAT('%',#{wxAccessToken},'%')
+			</if>
+			<if test="refreshToken!=null and refreshToken!=''">
+				AND refreshToken LIKE CONCAT('%',#{refreshToken},'%')
+			</if>
+			<if test="language!=null and language!=''">
+				AND language LIKE CONCAT('%',#{language},'%')
+			</if>
+			<if test="city!=null and city!=''">
+				AND city LIKE CONCAT('%',#{city},'%')
+			</if>
+			<if test="province!=null and province!=''">
+				AND province LIKE CONCAT('%',#{province},'%')
+			</if>
+			<if test="country!=null and country!=''">
+				AND country LIKE CONCAT('%',#{country},'%')
+			</if>
+			<if test="avatarUrl!=null and avatarUrl!=''">
+				AND avatarUrl LIKE CONCAT('%',#{avatarUrl},'%')
+			</if>
+			<if test="status!=null">
+				AND status=#{status}
+			</if>
+			AND del=0
+		</trim>
+	</sql>
+
+	<select id="listWxUser" parameterType="WxUser" resultType="WxUser">
+		<include refid="BaseMapper.pageStart" />
+			SELECT * FROM wx_user
+			<include refid="listCondition" />
+			<include refid="BaseMapper.sort" />
+		<include refid="BaseMapper.pageEnd" />
+	</select>
+
+	<select id="listWxUserCount" parameterType="WxUser" resultType="java.lang.Long">
+		SELECT COUNT(*) FROM wx_user
+		<include refid="listCondition" />
+	</select>
+
+	<select id="findWxUserByOpenId" parameterType="String" resultType="WxUser">
+		select * from wx_user where del=0 and openid=#{openid}
+	</select>
+</mapper>

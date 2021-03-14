@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.devsjk.namecardserver.dao.ProductionCategoryDao">
+
+	<select id="listProductionCategoryList" resultType="ProductionCategory" parameterType="ProductionCategory">
+		select * from production_category pc where company_id=#{companyId} and del=0 order by classify_sort asc
+	</select>
+
+	<insert id="insertProductionCategory" parameterType="ProductionCategory" useGeneratedKeys="true" keyProperty="id">
+        insert into production_category(company_id,`name`,classify_sort,creator,creatorId)
+        values (#{companyId},#{name},#{classifySort},#{creator},#{creatorId})
+	</insert>
+
+	<update id="deleteProductionCategory" parameterType="ProductionCategory" >
+		update production_category set del=1 where id=#{id}
+	</update>
+
+    <update id="updateSort" parameterType="ProductionCategory" >
+        update production_category set classify_sort=#{classifySort} where id=#{id}
+    </update>
+
+
+
+</mapper>

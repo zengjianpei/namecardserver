@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.devsjk.namecardserver.dao.CompanyDao">
+
+	<insert id="insertCompany" parameterType="Company" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO company(`name`,provinceCode,cityCode,areaCode,address,admin_id,industry_id,industry_detail_name,status,sign_up_time,try_deadline,deadline,people_num,come_in_num,inv_code,creatorId,creator)
+		VALUES (#{name},#{provinceCode},#{cityCode},#{areaCode},#{address},#{adminId},#{industryId},#{industryDetailName},#{status},#{signUpTime},#{tryDeadline},#{deadline},#{peopleNum},#{comeInNum},#{invCode},#{creatorId},#{creator})
+	</insert>
+
+	<update id="deleteCompany" parameterType="Company">
+		UPDATE company SET del=1 WHERE id=#{id}
+	</update>
+
+	<select id="findCompany" parameterType="Company" resultType="Company">
+		select t.*,mp.fullName as provinceName,mp1.fullName as cityName,mp2.fullName as areaName,concat(ifnull(mp.fullName,''), ifnull(mp1.fullName,''), ifnull(mp2.fullName,''), ifnull(address,'')) as wholeAddress from (SELECT * FROM company  WHERE id=#{id}) t
+		left join map_data mp on t.provinceCode=mp.id
+		left join map_data mp1 on t.cityCode=mp1.id
+		left join map_data mp2 on t.areaCode=mp2.id
+	</select>
+
+	<update id="updateCompany" parameterType="Company">
+		UPDATE company
+		<trim prefix="SET" prefixOverrides=",">
+			<if test="name!=null and name!=''">
+				,`name`=#{name}
+			</if>
+			<if test="provinceCode!=null and provinceCode!=''">
+				,provinceCode=#{provinceCode}
+			</if>
+			<if test="cityCode!=null and cityCode!=''">
+				,cityCode=#{cityCode}
+			</if>
+			<if test="areaCode!=null and areaCode!=''">
+				,areaCode=#{areaCode}
+			</if>
+			<if test="address!=null and address!=''">
+				,address=#{address}
+			</if>
+			<if test="adminId!=null">
+				,admin_id=#{adminId}
+			</if>
+			<if test="industryId!=null">
+				,industry_id=#{industryId}
+			</if>
+			<if test="industryDetailName!=null and industryDetailName!=''">
+				,industry_detail_name=#{industryDetailName}
+			</if>
+			<if test="status!=null">
+				,status=#{status}
+			</if>
+			<if test="signUpTime!=null">
+				,sign_up_time=#{signUpTime}
+			</if>
+			<if test="tryDeadline!=null and tryDeadline!=''">
+				,try_deadline=#{tryDeadline}
+			</if>
+			<if test="deadline!=null and deadline!=''">
+				,deadline=#{deadline}
+			</if>
+			<if test="peopleNum!=null">
+				,people_num=#{peopleNum}
+			</if>
+			<if test="invCode!=null and invCode!=''">
+				,inv_code=#{invCode}
+			</if>
+			<if test="updator!=null and updator!=''">
+				,updator=#{updator}
+			</if>
+			<if test="updatorId!=null and updatorId!=''">
+				,updatorId=#{updatorId}
+			</if>
+			,updateTime=now()
+		</trim>
+		WHERE id=#{id}
+	</update>
+
+	<sql id="listCondition">
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="id!=null and id!=''">
+				AND id LIKE CONCAT('%',#{id},'%')
+			</if>
+			<if test="name!=null and name!=''">
+				AND name LIKE CONCAT('%',#{name},'%')
+			</if>
+			<if test="address!=null and address!=''">
+				AND address LIKE CONCAT('%',#{address},'%')
+			</if>
+			<if test="admin_id!=null and admin_id!=''">
+				AND admin_id LIKE CONCAT('%',#{admin_id},'%')
+			</if>
+			<if test="industry_id!=null">
+				AND industry_id=#{industry_id}
+			</if>
+			<if test="status!=null">
+				AND status=#{status}
+			</if>
+			<if test="sign_up_time!=null">
+				AND sign_up_time=#{sign_up_time}
+			</if>
+			<if test="try_deadline!=null and try_deadline!=''">
+				AND try_deadline LIKE CONCAT('%',#{try_deadline},'%')
+			</if>
+			<if test="deadline!=null and deadline!=''">
+				AND deadline LIKE CONCAT('%',#{deadline},'%')
+			</if>
+			<if test="people_num!=null">
+				AND people_num=#{people_num}
+			</if>
+			<if test="inv_code!=null and inv_code!=''">
+				AND inv_code LIKE CONCAT('%',#{inv_code},'%')
+			</if>
+			AND del=0
+		</trim>
+	</sql>
+
+	<select id="listCompany" parameterType="Company" resultType="Company">
+		<include refid="BaseMapper.pageStart" />
+			SELECT * FROM company
+			<include refid="listCondition" />
+			<include refid="BaseMapper.sort" />
+		<include refid="BaseMapper.pageEnd" />
+	</select>
+
+	<select id="listCompanyCount" parameterType="Company" resultType="java.lang.Long">
+		SELECT COUNT(*) FROM company
+		<include refid="listCondition" />
+	</select>
+</mapper>

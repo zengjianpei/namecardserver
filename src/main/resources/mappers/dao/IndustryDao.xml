@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.devsjk.namecardserver.dao.IndustryDao">
+
+	<insert id="insertIndustry" parameterType="Industry" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO Industry(`name`,detailName,status,creatorId,creator)
+		VALUES (#{name},#{detailName},#{status},#{creatorId},#{creator})
+	</insert>
+
+	<update id="deleteIndustry" parameterType="Industry">
+		UPDATE Industry SET del=1 WHERE id=#{id}
+	</update>
+
+	<select id="findIndustry" parameterType="Industry" resultType="Industry">
+		SELECT * FROM Industry WHERE id=#{id}
+	</select>
+
+	<update id="updateIndustry" parameterType="Industry">
+		UPDATE Industry
+		<trim prefix="SET" prefixOverrides=",">
+			<if test="name!=null and name!=''">
+				,name=#{name}
+			</if>
+			<if test="detailName!=null and detailName!=''">
+				,detailName=#{detailName}
+			</if>
+			<if test="status!=null">
+				,status=#{status}
+			</if>
+			<if test="updatorId!=null and updatorId!=''">
+				,updatorId=#{updatorId}
+			</if>
+			<if test="updator!=null and updator!=''">
+				,updator=#{updator}
+			</if>
+			,updateTime=now()
+		</trim>
+		WHERE id=#{id}
+	</update>
+
+	<sql id="listCondition">
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="id!=null">
+				AND id=#{id}
+			</if>
+			<if test="name!=null and name!=''">
+				AND name LIKE CONCAT('%',#{name},'%')
+			</if>
+			<if test="status!=null">
+				AND status=#{status}
+			</if>
+			AND del=0
+		</trim>
+	</sql>
+
+	<select id="listIndustry" parameterType="Industry" resultType="Industry">
+		<include refid="BaseMapper.pageStart" />
+			SELECT * FROM industry
+			<include refid="listCondition" />
+			<include refid="BaseMapper.sort" />
+		<include refid="BaseMapper.pageEnd" />
+	</select>
+
+	<select id="listIndustryCount" parameterType="Industry" resultType="java.lang.Long">
+		SELECT COUNT(*) FROM Industry
+		<include refid="listCondition" />
+	</select>
+</mapper>

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.devsjk.namecardserver.dao.CompanyUserDao">
+
+	<insert id="insertCompanyUser" parameterType="CompanyUser" keyProperty="id" useGeneratedKeys="true">
+		insert into company_user(`name`,mobile,`position`,wechat,email,company_id,avatar_url,wx_user_id,gender,companyOwner,creator,creatorId)
+		values (#{name},#{mobile},#{position},#{wechat},#{email},#{companyId},#{avatarUrl},#{wxUserId},#{gender},#{companyOwner},#{creator},#{creatorId})
+	</insert>
+
+	<select id="findCompanyUser" parameterType="CompanyUser" resultType="CompanyUser">
+		select * from company_user where id=#{id}
+	</select>
+
+	<select id="findCompanyUserByWxUserId" parameterType="CompanyUser" resultType="CompanyUser">
+		select * from company_user where del=0 and wx_user_id=#{wxUserId}
+	</select>
+
+	<update id="updateCompanyUser" parameterType="CompanyUser" >
+		update company_user
+		<trim prefix="set" prefixOverrides=",">
+			<if test="name!=null and name!=''">
+				,`name`=#{name}
+			</if>
+			<if test="mobile!=null and mobile!=''">
+				,mobile=#{mobile}
+			</if>
+			<if test="position!=null and position!=''">
+				,`position`=#{position}
+			</if>
+			<if test="email!=null and email!=''">
+				,email=#{email}
+			</if>
+			<if test="companyId!=null">
+				,company_id=#{companyId}
+			</if>
+			<if test="avatarUrl!=null and avatarUrl!=''">
+				,avatar_url=#{avatarUrl}
+			</if>
+			<if test="wxUserId!=null">
+				,wx_user_id=#{wxUserId}
+			</if>
+			<if test="wechat!=null and wechat!=''">
+				,wechat=#{wechat}
+			</if>
+			<if test="gender!=null and gender!=''">
+				,gender=#{gender}
+			</if>
+			<if test="companyOwner!=null">
+				,companyOwner=#{companyOwner}
+			</if>
+			<if test="qcode!=null and qcode!=''">
+				,qcode=#{qcode}
+			</if>
+			<if test="updator!=null and updator!=''">
+				,updator=#{updator}
+			</if>
+			<if test="updatorId!=null and updatorId!=''">
+				,updatorId=#{updatorId}
+			</if>
+		</trim>
+		where id=#{id}
+	</update>
+
+	<select id="getVisitors" parameterType="CompanyUser" resultType="CardVisitRecord">
+		select t.*,w.mobile as visitorMobile,w.avatarUrl as visitorAvatar,w.nickname as visitorNickname from (<include refid="BaseMapper.pageStart"/>
+		select id,company_user_id,visitor_wx_id,times,last_visit_time from card_visit_record where company_user_id=#{id}
+		order by times desc
+		<include refid="BaseMapper.pageEnd"/>) t left join wx_user w on t.visitor_wx_id=w.id order by t.times desc
+	</select>
+
+	<select id="getCountVisitors" resultType="Long" parameterType="CompanyUser">
+		select count(*) from card_visit_record where company_user_id=#{id}
+	</select>
+
+	<select id="getCardPocket" parameterType="CompanyUser" resultType="CardVisitRecord">
+		select t.*,cu.name as companyUserName,cu.mobile as companyUserMobile,
+		cu.position as companyUserPosition,
+		cu.avatar_url as companyUserAvatar,
+		c.name as companyName from
+		(<include refid="BaseMapper.pageStart"/>
+		select id,company_user_id,visitor_wx_id,times,last_visit_time,gotoTop from card_visit_record where
+		visitor_wx_id=#{wxUserId}
+		<include refid="BaseMapper.pageEnd"/>)
+		t
+		left join company_user cu on t.company_user_id=cu.id
+		left join company c on cu.company_id=c.id
+		order by t.gotoTop desc, t.last_visit_time desc
+	</select>
+
+	<select id="getCountCardPocket" resultType="long" parameterType="CompanyUser">
+		select count(*) from card_visit_record where
+		visitor_wx_id=#{wxUserId}
+	</select>
+
+	<select id="listStaffManager" parameterType="CompanyUser" resultType="CompanyUser">
+        select t.*,c.name as companyName from (
+		<include refid="BaseMapper.pageStart"/>
+		select * from company_user where company_id=#{companyId} order by companyOwner desc
+		<include refid="BaseMapper.pageEnd"/>) t left join company c on t.company_id=c.id
+	</select>
+
+	<select id="listCountStaffManager" resultType="long" parameterType="CompanyUser">
+		select count(*) from company_user where company_id=#{companyId}
+	</select>
+
+	<select id="totalVisitors" parameterType="CompanyUser" resultType="int">
+		select count(1) from card_visit_record where company_user_id=#{id}
+	</select>
+
+	<select id="visitTotalCount" parameterType="CompanyUser" resultType="int">
+        select ifnull(sum(times),0) from card_visit_record where company_user_id=#{id}
+	</select>
+
+	<select id="todayVisitCount" parameterType="CompanyUser" resultType="int">
+        select count(1) from card_visit_record where company_user_id=#{id} and last_visit_time between now() and DATE_ADD(now(),INTERVAL 1 DAY)
+	</select>
+
+	<select id="findCardVisitRecord" parameterType="CardVisitRecord" resultType="CardVisitRecord">
+		select * from card_visit_record where company_user_id=#{companyUserId} and visitor_wx_id=#{visitorWxId}
+	</select>
+
+	<insert id="insertCardVisitRecord" parameterType="CardVisitRecord" keyProperty="id" useGeneratedKeys="true">
+		insert into card_visit_record(company_id,company_user_id,visitor_wx_id,times,last_visit_time)
+		values (#{companyId},#{companyUserId},#{visitorWxId},#{times},#{lastVisitTime})
+	</insert>
+
+	<update id="updateCardVisitRecordTimes" parameterType="CardVisitRecord">
+		update card_visit_record set times=times+1 where id=#{id}
+	</update>
+</mapper>
